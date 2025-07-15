@@ -4,6 +4,9 @@ from config import CONFIG
 
 def load_all_gps_files():
     folder = CONFIG["paths"]["gps_data_folder"]
+    if not os.path.exists(folder):
+        return pd.DataFrame()
+
     files = [f for f in os.listdir(folder) if f.endswith("_details.csv")]
     all_data = []
     for file in files:
@@ -32,7 +35,8 @@ def load_all_gps_files():
                         'Speed_Zone_3', 'Speed_Zone_4', 'Speed_Zone_5', 'Speed_Zone_6',
                         'Sprints', 'Accelerations', 'Decelerations']
             for col in num_cols:
-                df[col] = df[col].astype(str).str.replace(',', '').astype(float)
+                if col in df.columns:
+                    df[col] = df[col].astype(str).str.replace(',', '').astype(float)
 
             all_data.append(df[['date', 'Player'] + num_cols])
 
