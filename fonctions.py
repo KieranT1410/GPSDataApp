@@ -17,7 +17,7 @@ def load_all_gps_files():
             df['date'] = date
 
             df = df.rename(columns={
-                'Player Name': 'Player',
+                'Player Name': 'Player Name',
                 'Total Distance (m)': 'Total_Distance',
                 'Max Speed (km/h)': 'Max_Speed',
                 'Speed Zone 1 Distance (m)': 'Speed_Zone_1',
