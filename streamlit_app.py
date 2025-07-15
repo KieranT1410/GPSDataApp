@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from io import BytesIO
-from fonctions import load_all_gps_files, filter_gps_data_by_range
+from fonctions import filter_gps_data_by_range  # load_all_gps_files no longer used here
 from config import CONFIG
 
 st.set_page_config(page_title="Annan Athletic FC GPS Dashboard ⚽", layout="wide")
@@ -13,9 +13,37 @@ st.title("Annan Athletic FC | GPS Dashboard")
 session_files = sorted([f for f in os.listdir(CONFIG["paths"]["gps_data_folder"]) if f.endswith("_details.csv")], reverse=True)
 selected_session = st.sidebar.selectbox("Select a Session", session_files)
 
-# Load the selected session file
-data = pd.read_csv(os.path.join(CONFIG["paths"]["gps_data_folder"], selected_session))
-data['date'] = pd.to_datetime(selected_session.split(" - ")[1].split("_details")[0], format=CONFIG['date_format'])
+# Load and clean the selected session file
+df = pd.read_csv(os.path.join(CONFIG["paths"]["gps_data_folder"], selected_session))
+
+# Rename and normalize columns
+df = df.rename(columns={
+    'Player Name': 'Player',
+    'Total Distance (m)': 'Total_Distance',
+    'Max Speed (km/h)': 'Max_Speed',
+    'Speed Zone 1 Distance (m)': 'Speed_Zone_1',
+    'Speed Zone 2 Distance (m)': 'Speed_Zone_2',
+    'Speed Zone 3 Distance (m)': 'Speed_Zone_3',
+    'Speed Zone 4 Distance (m)': 'Speed_Zone_4',
+    'Speed Zone 5 Distance (m)': 'Speed_Zone_5',
+    'Speed Zone 6 Distance (m)': 'Speed_Zone_6',
+    'No. of Sprint (times)': 'Sprints',
+    'No. of Exp. Acc. (times)': 'Accelerations',
+    'No. of Exp. Dec. (times)': 'Decelerations'
+})
+
+# Clean numeric columns
+num_cols = ['Total_Distance', 'Max_Speed', 'Speed_Zone_1', 'Speed_Zone_2',
+            'Speed_Zone_3', 'Speed_Zone_4', 'Speed_Zone_5', 'Speed_Zone_6',
+            'Sprints', 'Accelerations', 'Decelerations']
+for col in num_cols:
+    if col in df.columns:
+        df[col] = df[col].astype(str).str.replace(',', '').astype(float)
+
+# Add date column
+df['date'] = pd.to_datetime(selected_session.split(" - ")[1].split("_details")[0], format=CONFIG['date_format'])
+
+data = df
 
 # Sidebar Filters
 players = ['All'] + sorted(data['Player'].unique())
